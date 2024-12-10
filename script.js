@@ -141,10 +141,8 @@ async function handlePayment() {
         
         console.log('Items préparés pour Stripe:', items);
 
-        // URL du backend selon l'environnement
-        const BACKEND_URL = window.location.hostname === 'localhost' 
-            ? 'http://localhost:3002'
-            : 'https://planteligne.onrender.com';
+        // URL du backend
+        const BACKEND_URL = 'https://planteligne.onrender.com';
 
         // Créer la session de paiement
         console.log('Envoi de la requête au serveur...');
