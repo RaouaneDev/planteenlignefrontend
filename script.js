@@ -145,7 +145,7 @@ async function handlePayment() {
         console.log('Envoi de la requête au serveur...');
         const API_URL = process.env.NODE_ENV === 'production'
             ? 'https://planteenligne.onrender.com'  
-            : 'http://localhost:3000';
+            : 'http://localhost:3001';
             
         const response = await fetch(`${API_URL}/api/create-checkout-session`, {
             method: 'POST',

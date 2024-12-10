@@ -1,0 +1,16 @@
+{
+  "name": "plantes-en-ligne",
+  "version": "1.0.0",
+  "description": "Site de vente de plantes en ligne",
+  "main": "index.js",
+  "scripts": {
+    "start": "http-server",
+    "build": "echo \"No build step required for static files\""
+  },
+  "dependencies": {
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
