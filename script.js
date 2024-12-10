@@ -72,37 +72,51 @@ function addToCart(product) {
 
 // Mettre à jour l'affichage du panier
 function updateCartUI() {
+    const cartCount = document.getElementById('cartCount');
     const cartItems = document.getElementById('cartItems');
     const cartTotal = document.getElementById('cartTotal');
-    const cartCount = document.getElementById('cartCount');
-    
-    if (cartItems && cartTotal) {
-        cartItems.innerHTML = '';
-        let total = 0;
+    const floatingCartCount = document.getElementById('floatingCartCount');
+    const floatingCartItems = document.getElementById('floatingCartItems');
+    const floatingCartTotal = document.getElementById('floatingCartTotal');
 
-        cart.forEach((item, index) => {
-            total += item.price * item.quantity;
-            cartItems.innerHTML += `
-                <div class="cart-item mb-2 p-2 border-bottom">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>${item.name}</strong>
-                            <br>
-                            <small>${item.quantity} x ${item.price.toFixed(2)} € = ${(item.price * item.quantity).toFixed(2)} €</small>
-                        </div>
-                        <button onclick="removeFromCart(${index})" class="btn btn-sm btn-danger">
-                            ❌
-                        </button>
-                    </div>
-                </div>
-            `;
-        });
+    // Mettre à jour le compteur
+    cartCount.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+    floatingCartCount.textContent = cartCount.textContent;
 
-        cartTotal.textContent = total.toFixed(2) + ' €';
-        if (cartCount) {
-            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-        }
-    }
+    // Calculer le total
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+    // Mettre à jour les items dans le modal
+    cartItems.innerHTML = cart.map((item, index) => `
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div>
+                <img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;">
+                ${item.name} (${item.quantity}x)
+            </div>
+            <div>
+                <span class="me-3">${(item.price * item.quantity).toFixed(2)}€</span>
+                <button class="btn btn-outline-danger btn-sm" onclick="removeFromCart(${index})">×</button>
+            </div>
+        </div>
+    `).join('');
+
+    // Mettre à jour les items dans le panier flottant
+    floatingCartItems.innerHTML = cart.map((item, index) => `
+        <div class="cart-item">
+            <div class="d-flex align-items-center">
+                <img src="${item.image}" alt="${item.name}" style="width: 30px; height: 30px; object-fit: cover; margin-right: 10px;">
+                <span>${item.name} (${item.quantity}x)</span>
+            </div>
+            <div>
+                <span class="me-2">${(item.price * item.quantity).toFixed(2)}€</span>
+                <button class="btn btn-outline-danger btn-sm py-0" onclick="removeFromCart(${index})">×</button>
+            </div>
+        </div>
+    `).join('');
+
+    // Mettre à jour les totaux
+    cartTotal.textContent = `Total: ${total.toFixed(2)}€`;
+    floatingCartTotal.textContent = `Total: ${total.toFixed(2)}€`;
 }
 
 // Supprimer du panier
