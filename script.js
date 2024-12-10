@@ -144,7 +144,7 @@ async function handlePayment() {
         // URL du backend selon l'environnement
         const BACKEND_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:3002'
-            : 'https://planteenligne-backend.onrender.com';
+            : 'https://planteligne.onrender.com';
 
         // Créer la session de paiement
         console.log('Envoi de la requête au serveur...');
