@@ -143,34 +143,34 @@ async function handlePayment() {
 
         // Créer la session de paiement
         console.log('Envoi de la requête au serveur...');
-        const API_URL = 'https://planteligne.onrender.com';
-            
-        const response = await fetch(`${API_URL}/api/create-checkout-session`, {
+        const response = await fetch('https://planteligne.onrender.com/api/create-checkout-session', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ items })
         });
 
+        console.log('Réponse reçue du serveur');
+
         if (!response.ok) {
-            const errorData = await response.text();
-            console.error('Erreur de réponse du serveur:', errorData);
+            const errorText = await response.text();
+            console.error('Erreur de réponse du serveur:', errorText);
             throw new Error(`Erreur HTTP: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('Réponse du serveur:', data);
+        console.log('Données reçues du serveur:', data);
 
-        if (!data.sessionId) {
-            throw new Error('Session ID non reçu du serveur');
+        if (!data.id) {
+            throw new Error('ID de session non reçu du serveur');
         }
 
         // Rediriger vers Stripe Checkout
         console.log('Redirection vers Stripe Checkout...');
         const stripe = Stripe('pk_test_51OgnMoHyjf3wZJG1uTOUqnHHMyb0HEKodOCnifzyH06O9G4HiYTkq0WRINguLov7UDticCCG9hET57OBCHXXdCKF00bfLWLl3w');
         const { error } = await stripe.redirectToCheckout({
-            sessionId: data.sessionId
+            sessionId: data.id
         });
 
         if (error) {
