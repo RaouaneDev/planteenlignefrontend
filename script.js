@@ -146,40 +146,46 @@ async function handlePayment() {
 
         // Créer la session de paiement
         console.log('Envoi de la requête au serveur...');
-        const response = await fetch(`${BACKEND_URL}/api/create-checkout-session`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ items })
-        });
+        try {
+            const response = await fetch(`${BACKEND_URL}/api/create-checkout-session`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ items })
+            });
 
-        console.log('Réponse reçue du serveur');
+            console.log('Réponse reçue du serveur');
+            console.log('Status:', response.status);
+            console.log('Headers:', Object.fromEntries(response.headers.entries()));
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Erreur de réponse du serveur:', errorText);
-            throw new Error(`Erreur HTTP: ${response.status}`);
-        }
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Erreur de réponse du serveur:', errorText);
+                throw new Error(`Erreur HTTP: ${response.status}`);
+            }
 
-        const data = await response.json();
-        console.log('Données reçues du serveur:', data);
+            const data = await response.json();
+            console.log('Données reçues du serveur:', data);
 
-        if (!data.sessionId) {
-            throw new Error('ID de session non reçu du serveur');
-        }
+            if (!data.sessionId) {
+                throw new Error('ID de session non reçu du serveur');
+            }
 
-        // Rediriger vers Stripe Checkout
-        console.log('Redirection vers Stripe Checkout...');
-        const stripe = Stripe('pk_test_51OgnMoHyjf3wZJG1uTOUqnHHMyb0HEKodOCnifzyH06O9G4HiYTkq0WRINguLov7UDticCCG9hET57OBCHXXdCKF00bfLWLl3w');
-        
-        const result = await stripe.redirectToCheckout({
-            sessionId: data.sessionId
-        });
+            // Rediriger vers Stripe Checkout
+            console.log('Redirection vers Stripe Checkout...');
+            const stripe = Stripe('pk_test_51OgnMoHyjf3wZJG1uTOUqnHHMyb0HEKodOCnifzyH06O9G4HiYTkq0WRINguLov7UDticCCG9hET57OBCHXXdCKF00bfLWLl3w');
+            
+            const result = await stripe.redirectToCheckout({
+                sessionId: data.sessionId
+            });
 
-        if (result.error) {
-            console.error('Erreur Stripe:', result.error);
-            throw result.error;
+            if (result.error) {
+                console.error('Erreur Stripe:', result.error);
+                throw result.error;
+            }
+        } catch (error) {
+            console.error('Erreur lors de la création de la session de paiement:', error);
         }
     } catch (error) {
         console.error('=== ERREUR LORS DU PAIEMENT ===');
