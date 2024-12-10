@@ -143,45 +143,43 @@ async function handlePayment() {
 
         // Créer la session de paiement
         console.log('Envoi de la requête au serveur...');
-        // URL de l'API en production
-        const API_URL = 'https://planteenligne.onrender.com';
-            
-        const response = await fetch(`${API_URL}/api/create-checkout-session`, {
+        const response = await fetch('https://planteenligne.onrender.com/api/create-checkout-session', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ items }),
-            mode: 'cors'
+            body: JSON.stringify({ items })
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.text();
             console.error('Erreur de réponse du serveur:', errorData);
             throw new Error(`Erreur HTTP: ${response.status}`);
         }
 
-        const { id: sessionId } = await response.json();
-        console.log('Session ID reçu:', sessionId);
+        const data = await response.json();
+        console.log('Réponse du serveur:', data);
+
+        if (!data.sessionId) {
+            throw new Error('Session ID non reçu du serveur');
+        }
 
         // Rediriger vers Stripe Checkout
         console.log('Redirection vers Stripe Checkout...');
         const stripe = Stripe('pk_test_51OgnMoHyjf3wZJG1uTOUqnHHMyb0HEKodOCnifzyH06O9G4HiYTkq0WRINguLov7UDticCCG9hET57OBCHXXdCKF00bfLWLl3w');
-        const result = await stripe.redirectToCheckout({
-            sessionId: sessionId
+        const { error } = await stripe.redirectToCheckout({
+            sessionId: data.sessionId
         });
 
-        console.log('Résultat de la redirection:', result);
-        
-        if (result.error) {
-            console.error('Erreur lors de la redirection:', result.error);
-            throw new Error(result.error.message);
+        if (error) {
+            console.error('Erreur Stripe:', error);
+            throw error;
         }
     } catch (error) {
         console.error('=== ERREUR LORS DU PAIEMENT ===');
         console.error('Message:', error.message);
         console.error('Stack:', error.stack);
-        alert('Une erreur est survenue lors du paiement. Veuillez réessayer.');
+        showNotification('Une erreur est survenue lors du paiement. Veuillez réessayer.');
     }
 }
 
