@@ -3,115 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commande Confirmée - PlantesShop</title>
+    <title>Merci pour votre achat ! - PlantesShop</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="styles.css">
     <style>
-        body {
+        .success-container {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            background-color: #f8f9fa;
-        }
-        .success-container {
-            flex: 1;
-            display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             padding: 2rem;
-        }
-        .success-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 3rem;
             text-align: center;
-            max-width: 600px;
-            width: 100%;
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
         }
-        .success-icon {
-            width: 100px;
-            height: 100px;
-            background: #198754;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 2rem;
-            color: white;
-            font-size: 3rem;
+        .success-container.fade-out {
+            opacity: 0;
         }
-        .confetti {
+        .home-button {
             position: fixed;
-            width: 10px;
-            height: 10px;
-            background: #f0f;
-            animation: fall 3s ease-in infinite;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
         }
-        @keyframes fall {
-            to {
-                transform: translateY(100vh) rotate(360deg);
-            }
-        }
-        .order-details {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin: 2rem 0;
-        }
-        .thank-you-message {
-            font-size: 1.2rem;
-            color: #666;
-            margin: 1.5rem 0;
+        .success-content {
+            margin-top: 100px;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="/">🌿 PlantesShop</a>
-        </div>
-    </nav>
-
     <div class="success-container">
-        <div class="success-card animate__animated animate__fadeInUp">
-            <div class="success-icon animate__animated animate__bounceIn animate__delay-1s">
-                ✓
-            </div>
-            <h1 class="display-4 mb-4 animate__animated animate__fadeIn animate__delay-1s">
-                Merci pour votre achat ! 🌿
-            </h1>
-            <div class="order-details animate__animated animate__fadeIn animate__delay-2s">
-                <h4>Votre commande a été confirmée</h4>
-                <p class="thank-you-message">
-                    Nous vous remercions pour votre confiance ! Un email de confirmation vous sera envoyé prochainement.
-                </p>
-            </div>
-            <div class="animate__animated animate__fadeIn animate__delay-2s">
-                <a href="/" class="btn btn-success btn-lg">
-                    Retourner à la boutique
-                </a>
+        <a href="/" class="btn btn-outline-success home-button">
+            <i class="fas fa-home"></i> Retour à l'accueil
+        </a>
+        <div class="success-content">
+            <h1 class="display-4 mb-4">🌿 Merci pour votre achat !</h1>
+            <h2 class="mb-4">Bonjour <span id="customerName">cher client</span> !</h2>
+            <p class="lead mb-4">Votre commande a été confirmée avec succès.</p>
+            <p class="mb-4">Un email de confirmation vous sera envoyé prochainement.</p>
+            <div class="mt-4">
+                <p class="text-muted">Cette page se fermera automatiquement dans <span id="countdown">10</span> secondes...</p>
             </div>
         </div>
     </div>
 
+    <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
     <script>
-        // Créer des confettis
-        function createConfetti() {
-            const colors = ['#ff69b4', '#00ff00', '#ff0000', '#0000ff', '#ffff00'];
-            for (let i = 0; i < 50; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = Math.random() * 100 + 'vw';
-                confetti.style.animationDelay = Math.random() * 3 + 's';
-                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                document.body.appendChild(confetti);
-            }
-        }
+        // Récupérer le session_id de l'URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session_id');
 
-        // Lancer les confettis au chargement de la page
-        window.addEventListener('load', createConfetti);
+        // Compte à rebours
+        let timeLeft = 10;
+        const countdownElement = document.getElementById('countdown');
+        const container = document.querySelector('.success-container');
+
+        const countdown = setInterval(() => {
+            timeLeft--;
+            countdownElement.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                container.classList.add('fade-out');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 500);
+            }
+        }, 1000);
+
+        // Récupérer les informations du client si un session_id est présent
+        if (sessionId) {
+            fetch(`https://planteligne.onrender.com/api/get-customer-name?session_id=${sessionId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.customerName) {
+                        document.getElementById('customerName').textContent = data.customerName;
+                    }
+                })
+                .catch(error => console.error('Erreur:', error));
+        }
     </script>
 </body>
 </html>
